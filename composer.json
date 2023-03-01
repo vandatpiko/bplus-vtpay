@@ -1,0 +1,20 @@
+{
+    "name": "vandatpiko/bplus-vtpay",
+    "description": "Connect API Bankplus e-wallet",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "VandatPiko\\BplusVTPay\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "authors": [{
+        "name": "vandatpiko",
+        "email": "nguyenvandat.piko.29@gmail.com"
+    }],
+    "require": {
+        "guzzlehttp/guzzle": "*"
+    }
+}

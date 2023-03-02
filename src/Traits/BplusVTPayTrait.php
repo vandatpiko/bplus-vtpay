@@ -931,6 +931,7 @@ trait BplusVTPayTrait
         $extra_data = (array) $this->bplusVTPay->extra_data;
         $extra_data[$key]   = $value;
         $this->bplusVTPay->extra_data = (object) $extra_data;
+        $this->bplusVTPay->save();
     }
 
     protected function generateRsa(): void

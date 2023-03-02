@@ -219,6 +219,7 @@ class BplusVTPay implements BplusVTPayContract
                 );
             }
         }
+        $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
         return (object) array(
             'success' => false,
             'message' => $result->status->displayMessage ?? 'Đã xảy ra lỗi xác nhận OTP'
@@ -309,6 +310,7 @@ class BplusVTPay implements BplusVTPayContract
                     break;
             }
         }
+        $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
         return (object) [
             'success' => false,
             'message' => 'Đã xảy ra lỗi vui lòng thử lại'
@@ -331,6 +333,7 @@ class BplusVTPay implements BplusVTPayContract
                 ];
             }
         }
+        $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
         return (object) [
             'success' => false,
             'message' => $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại'
@@ -374,6 +377,7 @@ class BplusVTPay implements BplusVTPayContract
                     break;
             }
         }
+        $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
         return (object) [
             'success' => false,
             'message' => $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại'

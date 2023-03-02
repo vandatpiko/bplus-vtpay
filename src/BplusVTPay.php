@@ -124,6 +124,7 @@ class BplusVTPay implements BplusVTPayContract
                 );
             }
         }
+        $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
         return (object) array(
             'success' => false,
             'message' => $result->status->displayMessage ?? 'Xác minh tài khoản thất bại vui lòng thử lại'
@@ -146,6 +147,7 @@ class BplusVTPay implements BplusVTPayContract
                 'message' => $result->status->displayMessage
             );
         }
+        $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
         return (object) array(
             'success' => false,
             'message' => 'Xác thực hình ảnh giấy tờ thất bại'
@@ -174,6 +176,7 @@ class BplusVTPay implements BplusVTPayContract
                 ];
             }
         }
+        $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
         return (object) array(
             'success' => false,
             'message' => $result->status->displayMessage ?? 'Xác thực hình ảnh khuôn mặt thất bại'

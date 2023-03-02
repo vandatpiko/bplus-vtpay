@@ -54,4 +54,11 @@ class BplusVTPay extends Model
     {
         return bplusvtpay()->setBplusVTPay($this->username)->getStatus();
     }
+
+    public function pushOfExtraData($key, $value) : void
+    {
+        $extra_data = (array) $this->extra_data;
+        $extra_data[$key]   = $value;
+        $this->extra_data = (object) $extra_data;
+    }
 }

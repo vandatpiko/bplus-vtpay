@@ -80,7 +80,6 @@ trait BplusVTPayTrait
 
     protected function ACTIVE($data)
     {
-        info(json_encode($data, JSON_UNESCAPED_UNICODE));
         try {
             $res = $this->client->request('POST', 'https://api8.viettelpay.vn/customer/v2/accounts/active', array(
                 'headers'   => array(
@@ -135,7 +134,6 @@ trait BplusVTPayTrait
             ));
             return json_decode($res->getBody());
         } catch (\Throwable $e) {
-            info($e);
         }
         return false;
     }
@@ -171,7 +169,6 @@ trait BplusVTPayTrait
             ));
             return json_decode($res->getBody());
         } catch (\Throwable $e) {
-            dd($e);
         }
         return false;
     }

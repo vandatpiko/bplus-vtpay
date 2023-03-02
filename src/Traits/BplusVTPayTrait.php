@@ -217,7 +217,7 @@ trait BplusVTPayTrait
             'identityType'  => 'msisdn',
             'otp'           => $otp,
             'identityValue' => $this->bplusVTPay->username,
-            'hash'          => hash('sha256', $this->bplusVTPay->imei),
+            'hash'          => $this->bplusVTPay->extra_data->hash,
             'imei'          => $this->bplusVTPay->imei,
             'typeOs'        => $this->configure['type_os'],
         );

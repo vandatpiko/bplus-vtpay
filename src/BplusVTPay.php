@@ -245,6 +245,7 @@ class BplusVTPay implements BplusVTPayContract
                     $result = $this->REGISTER_ACCOUNT();
                     if ($result !== false) {
                         $this->pushOfExtraData('transaction_id', $result->data->transactionId);
+                        $this->pushOfExtraData('hash', $result->data->hash);
                         $this->pushOfExtraData('state', 'REGISTER');
                         if ($result->status->code == 'CS0203'){
                             return (object) array(

@@ -117,6 +117,7 @@ class BplusVTPay implements BplusVTPayContract
                 $this->bplusVTPay->refresh_token   = $result->data->loginInfo->refreshToken;
                 $this->bplusVTPay->acc_no          = $result->data->customerInfo->sources->infra[0]->accNo;
                 $this->bplusVTPay->display_name    = $result->data->loginInfo->customerName;
+                $this->pushOfExtraData('bankPlusPackage', $result->data->customerInfo->sources->infra['0']->bankPlusPackage);
                 $this->bplusVTPay->save();
                 return (object) array(
                     'success' => true,

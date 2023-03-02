@@ -39,6 +39,9 @@ class BplusVTPayServiceProvider extends ServiceProvider
                         'time_out'  => config('bplusvtpay.time_out'),
                     ]), auth($guard));
                 }
+                return new BplusVTPay(new Client([
+                    'time_out'  => config('bplusvtpay.time_out'),
+                ]), null);
             }
         });
     }

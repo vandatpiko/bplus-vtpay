@@ -53,7 +53,7 @@ interface BplusVTPayContract
     /**
      * @return object
      */
-    public function ekycActive(object $data);
+    public function ekycActive($data);
     /**
      * @return object
      */

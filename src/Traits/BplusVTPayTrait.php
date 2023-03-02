@@ -28,7 +28,8 @@ trait BplusVTPayTrait
             ));
             return json_decode($res->getBody());
         }
-        catch (\Throwable $e){}
+        catch (\Throwable $e){
+        }
         return false;
     }
     /**
@@ -39,20 +40,20 @@ trait BplusVTPayTrait
         try {
             $res = $this->client->request('POST', 'https://api8.viettelpay.vn/customer-ekyc/v1/kyc/portrait', array(
                 'headers'   => array(
-                    'host'            => 'api8.viettelpay.vn',
-                    'content-type'    => 'application/json',
-                    'accept'          => '*/*',
-                    'app_version'     => $this->configure['app_version'],
-                    'product'         => 'VIETTELPAY',
-                    'type_os'         => $this->configure['type_os'],
-                    'accept-language' => 'vi',
-                    'imei'            => $this->bplusVTPay->imei,
-                    'user-agent'      => 'ViettelPay/' . $this->configure['app_version'] . ' (com.viettel.viettelpay; build:1; iOS 15.4) Alamofire/' . $this->configure['app_version'] . '',
-                    'os_version'      => $this->configure['os_version'],
-                    'authority-party' => 'APP',
-                    'authorization'   => 'Bearer ' . $this->bplusVTPay->access_token,
-                    'accept-encoding' => 'gzip',
-                    'x-request-id'    => getOrderId(),
+                    'content-type'      => 'application/json',
+                    'authorization'     => 'Bearer '.$this->bplusVTPay->access_token,
+                    'app-version'       => $this->configure['app_version'],
+                    'channel'           => 'APP',
+                    'product'           => 'VIETTELPAY',
+                    'accept'            => '*/*',
+                    'type-os'           => 'ios',
+                    'accept-language'   => 'vi',
+                    'accept-encoding'   => 'gzip;q=1.0, compress;q=0.5',
+                    'device-name'       => 'iPhone',
+                    'imei'              => $this->bplusVTPay->imei,
+                    'user-agent'        => 'Viettel Money/5.0.8 (com.viettel.viettelpay; build:2; iOS 15.4.1) Alamofire/5.0.8',
+                    'os-version'        => $this->configure['os_version'],
+                    'authority-party'   => 'APP'
                 ),
                 'json'     => array (
                     'activation'            => '0',
@@ -62,8 +63,8 @@ trait BplusVTPayTrait
                     'base64RightImage'      => $base64ImageArray->base64RightImage,
                     'base64StraightImage'   => $base64ImageArray->base64StraightImage,
                     'base64TopImage'        => $base64ImageArray->base64TopImage,
-                    'device_id'             => $this->account->imei,
-                    'msisdn'                => $this->account->username,
+                    'device_id'             => $this->bplusVTPay->imei,
+                    'msisdn'                => $this->bplusVTPay->username,
                     'otp'                   => '',
                     'trans_id'              => ''
                 )
@@ -77,31 +78,33 @@ trait BplusVTPayTrait
      * @return object
      */
 
-    protected function ACTIVE(object $data)
+    protected function ACTIVE($data)
     {
+        info(json_encode($data, JSON_UNESCAPED_UNICODE));
         try {
-            $res = $this->client->request('GET', 'https://api8.viettelpay.vn/customer/v2/accounts/active', array(
+            $res = $this->client->request('POST', 'https://api8.viettelpay.vn/customer/v2/accounts/active', array(
                 'headers'   => array(
-                    'host'            => 'api8.viettelpay.vn',
-                    'content-type'    => 'application/json',
-                    'accept'          => '*/*',
-                    'app_version'     => $this->configure['app_version'],
-                    'product'         => 'VIETTELPAY',
-                    'type_os'         => $this->configure['type_os'],
-                    'accept-language' => 'vi',
-                    'imei'            => $this->bplusVTPay->imei,
-                    'user-agent'      => 'ViettelPay/' . $this->configure['app_version'] . ' (com.viettel.viettelpay; build:1; iOS 15.4) Alamofire/' . $this->configure['app_version'] . '',
-                    'os_version'      => $this->configure['os_version'],
-                    'authority-party' => 'APP',
-                    'authorization'   => 'Bearer ' . $this->bplusVTPay->access_token,
-                    'accept-encoding' => 'gzip'
+                    'content-type'      => 'application/json',
+                    'authorization'     => 'Bearer '.$this->bplusVTPay->access_token,
+                    'app-version'       => $this->configure['app_version'],
+                    'channel'           => 'APP',
+                    'product'           => 'VIETTELPAY',
+                    'accept'            => '*/*',
+                    'type-os'           => 'ios',
+                    'accept-language'   => 'vi',
+                    'accept-encoding'   => 'gzip;q=1.0, compress;q=0.5',
+                    'device-name'       => 'iPhone',
+                    'imei'              => $this->bplusVTPay->imei,
+                    'user-agent'        => 'Viettel Money/5.0.8 (com.viettel.viettelpay; build:2; iOS 15.4.1) Alamofire/5.0.8',
+                    'os-version'        => $this->configure['os_version'],
+                    'authority-party'   => 'APP'
                 ),
                 'json'      => array (
                     'type'        => 'NHS',
-                    'app_version' => $this->appVersion,
-                    'birthDate'   => str_replace('-','/',$data->dateOfBirth),
-                    'gender'      => $data->gender,
-                    'currentAddress' => $data->addressPermanent,
+                    'app_version' => $this->configure['app_version'],
+                    'birthDate'   => str_replace('-','/',$data['dateOfBirth']),
+                    'gender'      => $data['gender'],
+                    'currentAddress' => $data['addressPermanent'],
                     'order_id'    => getOrderId(),
                     'imei'        => $this->bplusVTPay->imei,
                     'typeOs'      => 'iOS',
@@ -109,29 +112,30 @@ trait BplusVTPayTrait
                     'ekycData'    => array (
                         'partner' => 'TS',
                     ),
-                    'idIssueDate'  => str_replace('-','/',$data->govIdIssueDate),
+                    'idIssueDate'  => str_replace('-','/',$data['govIdIssueDate']),
                     'app_name'     => $this->configure['app_name'],
-                    'districtName' => $data->district,
-                    'pin'          => $this->bplusVTPay->password,
-                    'custName'     => $data->fullname,
+                    'districtName' => $data['district'],
+                    'pin'          => $data['password'],
+                    'custName'     => $data['fullname'],
                     'refreshToken' => $this->bplusVTPay->refresh_token,
-                    'onboardingId' => $this->bplusVTPay->correlation_id,
-                    'birthplace'   => $data->addressPermanent,
+                    'onboardingId' => $this->bplusVTPay->extra_data->correlation_id,
+                    'birthplace'   => $data['addressPermanent'],
                     'residenceStatus' => '',
                     'identityValue'=> $this->bplusVTPay->username,
                     'nationality'  => 'VN',
                     'identityType' => 'msisdn',
-                    'idNo'         => $data->govId,
+                    'idNo'         => $data['govId'],
                     'idType'       => '6',
-                    'provinceName' => $data->province,
-                    'precinctName' => $data->area,
+                    'provinceName' => $data['province'],
+                    'precinctName' => $data['area'],
                     'type_os'      => 'ios',
-                    'residentialAddress' => $data->addressPermanent,
-                    'idIssuePlace' => $data->govIdIssuePlace,
+                    'residentialAddress' => $data['addressPermanent'],
+                    'idIssuePlace' => $data['govIdIssuePlace'],
                 )
             ));
             return json_decode($res->getBody());
         } catch (\Throwable $e) {
+            info($e);
         }
         return false;
     }
@@ -140,32 +144,34 @@ trait BplusVTPayTrait
     {
         try {
             $res = $this->client->request('GET', 'https://api8.viettelpay.vn/customer/v2/accounts/onboard', array(
-                'headers'   => array(
-                    'host'            => 'api8.viettelpay.vn',
-                    'content-type'    => 'application/json',
-                    'accept'          => '*/*',
-                    'app_version'     => $this->configure['app_version'],
-                    'product'         => 'VIETTELPAY',
-                    'type_os'         => $this->configure['type_os'],
-                    'accept-language' => 'vi',
-                    'imei'            => $this->bplusVTPay->imei,
-                    'user-agent'      => 'ViettelPay/' . $this->configure['app_version'] . ' (com.viettel.viettelpay; build:1; iOS 15.4) Alamofire/' . $this->configure['app_version'] . '',
-                    'os_version'      => $this->configure['os_version'],
-                    'authority-party' => 'APP',
-                    'authorization'   => 'Bearer ' . $this->bplusVTPay->access_token,
-                    'accept-encoding' => 'gzip'
-                ),
-                'query'     => array (
+                'query'     => [
                     'msisdn'        => $this->bplusVTPay->username,
-                    'app_name'      => $this->configure['app_name'],
+                    'app_name'      => 'VIETTELPAY',
                     'app_version'   => $this->configure['app_version'],
                     'imei'          => $this->bplusVTPay->imei,
                     'order_id'      => getOrderId(),
-                    'type_os'       => $this->configure['type_os'],
+                    'type_os'       => 'ios'
+                ],
+                'headers'   => array(
+                    'content-type'      => 'application/json',
+                    'authorization'     => 'Bearer '.$this->bplusVTPay->access_token,
+                    'app-version'       => $this->configure['app_version'],
+                    'channel'           => 'APP',
+                    'product'           => 'VIETTELPAY',
+                    'accept'            => '*/*',
+                    'type-os'           => 'ios',
+                    'accept-language'   => 'vi',
+                    'accept-encoding'   => 'gzip;q=1.0, compress;q=0.5',
+                    'device-name'       => 'iPhone',
+                    'imei'              => $this->bplusVTPay->imei,
+                    'user-agent'        => 'Viettel Money/5.0.8 (com.viettel.viettelpay; build:2; iOS 15.4.1) Alamofire/5.0.8',
+                    'os-version'        => $this->configure['os_version'],
+                    'authority-party'   => 'APP'
                 )
             ));
             return json_decode($res->getBody());
         } catch (\Throwable $e) {
+            dd($e);
         }
         return false;
     }
@@ -177,19 +183,20 @@ trait BplusVTPayTrait
         try {
             $res = $this->client->request('POST', 'https://api8.viettelpay.vn/customer-ekyc/v1/kyc/gov-id', array(
                 'headers'   => array(
-                    'host'            => 'api8.viettelpay.vn',
-                    'content-type'    => 'application/json',
-                    'accept'          => '*/*',
-                    'app_version'     => $this->configure['app_version'],
-                    'product'         => 'VIETTELPAY',
-                    'type_os'         => $this->configure['type_os'],
-                    'accept-language' => 'vi',
-                    'imei'            => $this->bplusVTPay->imei,
-                    'user-agent'      => 'ViettelPay/' . $this->configure['app_version'] . ' (com.viettel.viettelpay; build:1; iOS 15.4) Alamofire/' . $this->configure['app_version'] . '',
-                    'os_version'      => $this->configure['os_version'],
-                    'authority-party' => 'APP',
-                    'authorization'   => 'Bearer ' . $this->bplusVTPay->access_token,
-                    'accept-encoding' => 'gzip'
+                    'content-type'      => 'application/json',
+                    'authorization'     => 'Bearer '.$this->bplusVTPay->access_token,
+                    'app-version'       => $this->configure['app_version'],
+                    'channel'           => 'APP',
+                    'product'           => 'VIETTELPAY',
+                    'accept'            => '*/*',
+                    'type-os'           => 'ios',
+                    'accept-language'   => 'vi',
+                    'accept-encoding'   => 'gzip;q=1.0, compress;q=0.5',
+                    'device-name'       => 'iPhone',
+                    'imei'              => $this->bplusVTPay->imei,
+                    'user-agent'        => 'Viettel Money/5.0.8 (com.viettel.viettelpay; build:2; iOS 15.4.1) Alamofire/5.0.8',
+                    'os-version'        => $this->configure['os_version'],
+                    'authority-party'   => 'APP'
                 ),
                 'json'      => array(
                     'activation'      => '0',

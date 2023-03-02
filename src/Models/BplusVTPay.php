@@ -25,6 +25,10 @@ class BplusVTPay extends Model
         'client_private_key', 'viettel_public_key', 'token_notification', 'imei', 'user_id', 'password'
     ];
 
+    protected $appends = [
+        'status'
+    ];
+
     public function getTable()
     {
         return config('bplusvtpay.table');
@@ -44,5 +48,10 @@ class BplusVTPay extends Model
     public static function find($id)
     {
         return static::query()->find($id);
+    }
+
+    public function getStatusAttribute()
+    {
+        return bplusvtpay()->setBplusVTPay($this->username)->getStatus();
     }
 }

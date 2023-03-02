@@ -106,9 +106,9 @@ class BplusVTPay implements BplusVTPayContract
         ];
     }
 
-    public function ekycActive(object $data)
+    public function ekycActive($data)
     {
-        $this->bplusVTPay->password = $data->password;
+        $this->bplusVTPay->password = $data['password'];
         $result = $this->ACTIVE($data);
         if($result != false) {
             if (!empty($result->data)){
@@ -371,9 +371,6 @@ class BplusVTPay implements BplusVTPayContract
                         'message' => $result->status->displayMessage,
                         'otp'     => true
                     ];
-                    break;
-                default:
-                    # code...
                     break;
             }
         }

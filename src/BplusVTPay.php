@@ -211,7 +211,7 @@ class BplusVTPay implements BplusVTPayContract
         $result = $this->REGISTER_OTP($otp);
         if ($result !== false) {
             if ($result->status->code == '00'){
-                $this->bplusVTPay->authorization = $result->data->loginInfo->accessToken;
+                $this->bplusVTPay->access_token  = $result->data->loginInfo->accessToken;
                 $this->bplusVTPay->account_id    = $result->data->customerInfo->accountId;
                 $this->bplusVTPay->session_id    = $result->data->customerInfo->otherData->sessionId;
                 $this->bplusVTPay->refresh_token = $result->data->loginInfo->refreshToken;

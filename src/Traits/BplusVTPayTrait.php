@@ -961,7 +961,7 @@ trait BplusVTPayTrait
             $decoded_token = Encrypt::decode($this->bplusVTPay->access_token);
             if (is_object($decoded_token)){
                 if ($decoded_token->exp < time()) {
-                    $result = $this->LOGIN_NEED_PIN($this->bplusVTPay->password);
+                    $result = $this->REFRESH();
                     if ($result !== false) {
                         if ($result->status->code == '00') {
                             $this->bplusVTPay->access_token  = $result->data->accessToken;
@@ -983,6 +983,7 @@ trait BplusVTPayTrait
             if ($result->status->code == '00') {
                 $this->bplusVTPay->session_id = $result->data->otherData->sessionId;
                 $this->bplusVTPay->acc_no     = $result->data->sources->infra['0']->accNo ?? null;
+                $this->pushOfExtraData('bankPlusPackage', $result->data->sources->infra['0']->bankPlusPackage);
             }
         }
     }

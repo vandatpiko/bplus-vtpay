@@ -26,7 +26,7 @@ class BplusVTPay extends Model
     ];
 
     protected $appends = [
-        'status'
+        'status', 'rank_type'
     ];
 
     public function getTable()
@@ -53,6 +53,26 @@ class BplusVTPay extends Model
     public function getStatusAttribute()
     {
         return bplusvtpay()->setBplusVTPay($this->username)->getStatus();
+    }
+
+    public function getRankTypeAttribute()
+    {
+        $bankPlusPackage = $this->extra_data->bankPlusPackage ?? '';
+        switch ($bankPlusPackage) {
+            case 'VTT_BANKPLUS_VDS':
+                return 'Gói 1';
+            case 'VTT_PACKAGE_26':
+                return 'Gói trải nghiệm';
+            case 'VTT_BANKPLUS_ECO':
+                return 'Gói không giới hạn';
+            case 'VTT_BANKPLUS_START';
+                return 'Gói tiêu chuẩn';
+            case 'VTT_BANKPLUS_FLEX':
+                return 'Gói 2';
+            default:
+                return 'Trống';
+                break;
+        }
     }
 
     public function pushOfExtraData($key, $value) : void

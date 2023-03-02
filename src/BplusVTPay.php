@@ -344,12 +344,8 @@ class BplusVTPay implements BplusVTPayContract
         ];
     }
 
-    public function loginWithPassword($password = null)
+    public function loginWithPassword($password = '')
     {
-        $password = $password ?? $this->bplusVTPay->password;
-        if (empty($password)) {
-            throw new \InvalidArgumentException("Invalid password");
-        }
         $result = $this->LOGIN_NEED_PIN($password);
         if ($result != false) {
             switch ($result->status->code) {

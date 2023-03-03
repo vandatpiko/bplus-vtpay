@@ -66,7 +66,7 @@ class BplusVTPay extends Model
             case 'VTT_BANKPLUS_ECO':
                 return 'Gói không giới hạn';
             case 'VTT_BANKPLUS_START';
-                return 'Gói tiêu chuẩn';
+                return 'Gói 2A';
             case 'VTT_BANKPLUS_FLEX':
                 return 'Gói 2';
             default:

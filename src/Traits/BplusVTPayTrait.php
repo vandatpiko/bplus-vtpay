@@ -983,7 +983,7 @@ trait BplusVTPayTrait
             if ($result->status->code == '00') {
                 $this->bplusVTPay->session_id = $result->data->otherData->sessionId;
                 $this->bplusVTPay->acc_no     = $result->data->sources->infra['0']->accNo ?? null;
-                $this->pushOfExtraData('bankPlusPackage', $result->data->sources->infra['0']->bankPlusPackage);
+                $this->pushOfExtraData('bankPlusPackage', $result->data->sources->infra['0']->bankPlusPackage ?? '');
             }
         }
     }

@@ -46,6 +46,15 @@ class BplusVTPay implements BplusVTPayContract
         $this->authFactory = $authFactory;
     }
 
+    /**
+     * @return string
+     */
+
+    public function getState()
+    {
+        return $this->bplusVTPay->extra_data->state ?? false;
+    }
+
     public function setBplusVTPay($username)
     {
         if (empty($username)) {
@@ -260,6 +269,7 @@ class BplusVTPay implements BplusVTPayContract
                     break;
             }
         }
+        $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
         return (object) [
             'success' => false,
             'message' => 'Đã xảy ra lỗi vui lòng thử lại'

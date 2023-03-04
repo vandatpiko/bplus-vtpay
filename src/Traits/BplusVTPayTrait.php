@@ -931,7 +931,6 @@ trait BplusVTPayTrait
 
     protected function pushOfExtraData($key, $value): void
     {
-
         $extra_data = (array) $this->bplusVTPay->extra_data;
         $extra_data[$key]   = $value;
         $this->bplusVTPay->extra_data = (object) $extra_data;

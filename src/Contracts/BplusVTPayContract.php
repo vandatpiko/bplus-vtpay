@@ -4,6 +4,10 @@ namespace VandatPiko\BplusVTPay\Contracts;
 interface BplusVTPayContract
 {
     /**
+     * @return string
+     */
+    public function getState();
+    /**
      *
      * @return VandatPiko\BplusVTPay\Contracts\BplusVTPayContract
      */

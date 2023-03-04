@@ -245,6 +245,7 @@ class BplusVTPay implements BplusVTPayContract
                 case 'CS9901':
                     $result = $this->REGISTER_ACCOUNT();
                     if ($result !== false) {
+                        $this->pushOfExtraData('error_message', 'Gửi mã OTP đăng ký thành công');
                         $this->pushOfExtraData('transaction_id', $result->data->transactionId);
                         $this->pushOfExtraData('hash', $result->data->hash);
                         $this->pushOfExtraData('state', 'REGISTER');
@@ -364,6 +365,7 @@ class BplusVTPay implements BplusVTPayContract
                     break;
                 case 'AUT0014':
                     $this->bplusVTPay->password   = $password;
+                    $this->pushOfExtraData('error_message', 'Gửi mã OTP đăng nhập thành công');
                     $this->pushOfExtraData('request_id', $result->data->requestId);
                     $this->pushOfExtraData('state', 'LOGIN');
                     $this->bplusVTPay->save();

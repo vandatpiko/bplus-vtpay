@@ -19,6 +19,10 @@ interface BplusVTPayContract
      */
     public function setBplusVTPay($username);
     /**
+     * @return string
+     */
+    public function getBplusPackage();
+    /**
      * @return object
      */
     public function loginWithPassword($password = null);
@@ -66,4 +70,20 @@ interface BplusVTPayContract
      * @return bool
      */
     public function getStatus();
+    /**
+     * @return object
+     */
+    public function transferInside($receiver,$amount = 1000,$comment = 'NULL',$otp = false,$order_id = '');
+    /**
+     * @return object
+     */
+    public function transferOutside($bank_acc,$bank_code,$amount = 10000,$comment = 'NULL',$ben_name = null,$otp = false,$order_id = null);
+    /**
+     * @return string
+     */
+    public function getAccNo();
+    /**
+     * @return string
+     */
+    public function getDisPlayName();
 }

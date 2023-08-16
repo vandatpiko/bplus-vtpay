@@ -33,18 +33,16 @@ class BplusVTPayServiceProvider extends ServiceProvider
         $this->app->singleton(BplusVTPayContract::class, function ($app) {
 
             @$explodeGuard = explode('|', config('bplusvtpay.guard'));
+            $configClient  = [
+                'time_out'  => config('bplusvtpay.time_out'),
+                'http_errors' => false,
+            ];
             foreach ($explodeGuard as $guard) {
                 if (auth($guard)->check()) {
-                    return new BplusVTPay(new Client([
-                        'time_out'  => config('bplusvtpay.time_out'),
-                        'http_errors' => false
-                    ]), auth($guard));
+                    return new BplusVTPay(new Client($configClient), auth($guard));
                 }
             }
-            return new BplusVTPay(new Client([
-                'time_out'  => config('bplusvtpay.time_out'),
-                'http_errors' => false
-            ]), null);
+            return new BplusVTPay(new Client($configClient), null);
         });
     }
 

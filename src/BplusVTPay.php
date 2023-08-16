@@ -33,6 +33,10 @@ class BplusVTPay implements BplusVTPayContract
 
     protected $bplusVTPay;
 
+    protected $defaultBankCode = [
+        '970436'    => 'VCB'
+    ];
+
 
     public function __construct(Client $client,$authFactory)
     {
@@ -74,6 +78,16 @@ class BplusVTPay implements BplusVTPayContract
         return $this;
     }
 
+    public function getBplusPackage()
+    {
+        return $this->bplusVTPay->extra_data->bankPlusPackage ?? 'Trống';
+    }
+
+    public function getAccNo()
+    {
+        return $this->bplusVTPay->acc_no;
+    }
+
     public function getStatus() : bool
     {
         $decoded_token = Encrypt::decode($this->bplusVTPay->access_token);
@@ -83,6 +97,118 @@ class BplusVTPay implements BplusVTPayContract
             }
         }
         return false;
+    }
+
+    public function getDisPlayName()
+    {
+        return $this->bplusVTPay->display_name;
+    }
+
+    public function transferInside($receiver,$amount = 1000,$comment = 'NULL',$otp = null,$order_id = '')
+    {
+        if(empty($otp)) {
+            $result = $this->MONEY_TRANSFER_INSIDE_SMS($amount,$receiver,$comment);
+            if($result != false) {
+                if($result->response_code == 'OTP') {
+                    $this->pushOfExtraData('state', 'TRANSFER_INSIDE');
+                    $this->bplusVTPay->save();
+                    return (object) array(
+                        'success' => true,
+                        'otp'     => true,
+                        'message' => $result->msg_confirm,
+                        'data'  => [
+                            'receiver'  => $receiver,
+                            'amount'    => $amount,
+                            'comment'   => $comment,
+                            'order_id'=> $result->order_id,
+                        ]
+                    );
+                }
+                return (object) array(
+                    'success' => false,
+                    'message' => $result->error_code_detail
+                );
+            }
+            return (object) array(
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi chuyển tiền vui lòng thử lại'
+            );
+        }
+        $result = $this->MONEY_TRANSFER_INSIDE_SMS_OTP($amount, $receiver, $comment, $order_id, $otp);
+        if($result != false) {
+            if($result->response_code == '00') {
+                $this->bplusVTPay->balance = $this->bplusVTPay->balance - $amount;
+                $this->bplusVTPay->save();
+                $this->pushOfExtraData('state', null);
+                return (object) array(
+                    'success' => true,
+                    'message' => 'Thành công',
+                    'balance' => $this->bplusVTPay->balance
+                );
+            }
+            return (object) array(
+                'success' => false,
+                'message' => $result->error_code_detail
+            );
+        }
+        return (object) array(
+            'success' => false,
+            'message' => 'Đã xảy ra lỗi chuyển tiền vui lòng thử lại'
+        );
+    }
+
+    public function transferOutside($bank_acc, $bank_code, $amount = 10000, $comment = 'NULL',$ben_name = null,$otp = false, $order_id = null)
+    {
+        if(empty($otp)) {
+            $result = $this->GET_BENEFICIARY_NAME($bank_acc, $bank_code);
+            return $result;
+            if($result != false) {
+                if($result->response_code == '00') {
+                    $ben_name = $result->ben_name;
+                    $result = $this->MONEY_TRANSFER_OUTSIDE_SMS($amount, $comment,$bank_acc, $bank_code,$ben_name);
+                    if($result != false) {
+                        if($result->response_code == 'OTP') {
+                            return (object) array(
+                                'success' => true,
+                                'otp'     => true,
+                                'message' => $result->msg_confirm,
+                                'order_id'=> $result->order_id,
+                                'ben_name'=> $result->ben_name
+                            );
+                        }
+                        return (object) array(
+                            'success' => false,
+                            'message' => $result->error_code_detail
+                        );
+                    }
+                    return (object) array(
+                        'success' => false,
+                        'message' => 'Chuyển tiền thất bại'
+                    );
+                }
+                return (object) array(
+                    'success' => false,
+                    'message' => $result->error_code_detail
+                );
+            }
+        }
+        $result = $this->MONEY_TRANSFER_OUTSIDE_SMS_OTP($amount, $comment,$bank_acc, $bank_code,$ben_name,$order_id,$otp);
+        if($result != false) {
+            if($result->response_code == '00') {
+                return (object) array(
+                    'success' => true,
+                    'message' => 'Thành công',
+                );
+            }
+            return (object) array(
+                'success' => false,
+                'message' => $result->error_code_detail
+            );
+        }
+        return (object) array(
+            'success' => false,
+            'message' => 'Đã xảy ra lỗi chuyển tiền vui lòng thử lại'
+        );
     }
 
     public function getGift()
@@ -99,7 +225,8 @@ class BplusVTPay implements BplusVTPayContract
                     ],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
                     $data[] = (object) [
                         'title'         => $item->voucher->title,
-                        'voucher_code'  => $base64
+                        'voucher_code'  => $base64,
+                        'appServiceCode'=> explode(',', $item->appServiceCode)
                     ];
                 }
             }
@@ -135,6 +262,7 @@ class BplusVTPay implements BplusVTPayContract
             }
         }
         $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
+        $this->bplusVTPay->save();
         return (object) array(
             'success' => false,
             'message' => $result->status->displayMessage ?? 'Xác minh tài khoản thất bại vui lòng thử lại'
@@ -158,6 +286,7 @@ class BplusVTPay implements BplusVTPayContract
             );
         }
         $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
+        $this->bplusVTPay->save();
         return (object) array(
             'success' => false,
             'message' => 'Xác thực hình ảnh giấy tờ thất bại'
@@ -187,6 +316,7 @@ class BplusVTPay implements BplusVTPayContract
             }
         }
         $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
+        $this->bplusVTPay->save();
         return (object) array(
             'success' => false,
             'message' => $result->status->displayMessage ?? 'Xác thực hình ảnh khuôn mặt thất bại'
@@ -233,6 +363,7 @@ class BplusVTPay implements BplusVTPayContract
             }
         }
         $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
+        $this->bplusVTPay->save();
         return (object) array(
             'success' => false,
             'message' => $result->status->displayMessage ?? 'Đã xảy ra lỗi xác nhận OTP'
@@ -255,9 +386,10 @@ class BplusVTPay implements BplusVTPayContract
                     $result = $this->REGISTER_ACCOUNT();
                     if ($result !== false) {
                         $this->pushOfExtraData('error_message', 'Gửi mã OTP đăng ký thành công');
-                        $this->pushOfExtraData('transaction_id', $result->data->transactionId);
-                        $this->pushOfExtraData('hash', $result->data->hash);
+                        $this->pushOfExtraData('transaction_id', $result->data->transactionId ?? '');
+                        $this->pushOfExtraData('hash', $result->data->hash ?? '');
                         $this->pushOfExtraData('state', 'REGISTER');
+                        $this->bplusVTPay->save();
                         if ($result->status->code == 'CS0203'){
                             return (object) array(
                                 'success' => false,
@@ -270,6 +402,7 @@ class BplusVTPay implements BplusVTPayContract
             }
         }
         $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
+        $this->bplusVTPay->save();
         return (object) [
             'success' => false,
             'message' => 'Đã xảy ra lỗi vui lòng thử lại'
@@ -304,7 +437,7 @@ class BplusVTPay implements BplusVTPayContract
                 case '00':
                     $this->bplusVTPay->account_id = $result->data->accountId;
                     $this->bplusVTPay->display_name = $result->data->displayName;
-                    $this->bplusVTPay->save();
+                    // $this->bplusVTPay->save();
                     return (object) [
                         'success'   => true,
                         'message'   => $result->status->displayMessage,
@@ -327,6 +460,7 @@ class BplusVTPay implements BplusVTPayContract
             }
         }
         $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
+        $this->bplusVTPay->save();
         return (object) [
             'success' => false,
             'message' => 'Đã xảy ra lỗi vui lòng thử lại'
@@ -342,6 +476,7 @@ class BplusVTPay implements BplusVTPayContract
                 $this->bplusVTPay->refresh_token = $result->data->refreshToken;
                 $this->bplusVTPay->login_at = Carbon::now();
                 $this->getSessionId();
+                $this->DIGITAL_OTP();
                 $this->bplusVTPay->save();
                 return (object) [
                     'success' => true,
@@ -350,6 +485,7 @@ class BplusVTPay implements BplusVTPayContract
             }
         }
         $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
+        $this->bplusVTPay->save();
         return (object) [
             'success' => false,
             'message' => $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại'
@@ -366,11 +502,15 @@ class BplusVTPay implements BplusVTPayContract
                     $this->bplusVTPay->refresh_token = $result->data->refreshToken;
                     $this->bplusVTPay->password = $password;
                     $this->getSessionId();
+                    $this->DIGITAL_OTP();
                     $this->bplusVTPay->login_at = Carbon::now();
                     $this->bplusVTPay->save();
                     return (object) [
                         'success' => true,
-                        'message' => $result->status->displayMessage
+                        'message' => $result->status->displayMessage,
+                        'data'    => [
+                            'display_name'  => $this->bplusVTPay->display_name
+                        ]
                     ];
                     break;
                 case 'AUT0014':
@@ -382,12 +522,16 @@ class BplusVTPay implements BplusVTPayContract
                     return (object) [
                         'success' => false,
                         'message' => $result->status->displayMessage,
-                        'otp'     => true
+                        'otp'     => true,
+                        'data'    => [
+                            'display_name'  => $this->bplusVTPay->display_name
+                        ]
                     ];
                     break;
             }
         }
         $this->pushOfExtraData('error_message', $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại');
+        $this->bplusVTPay->save();
         return (object) [
             'success' => false,
             'message' => $result->status->displayMessage ?? 'Đã xảy ra lỗi vui lòng thử lại'
@@ -396,10 +540,15 @@ class BplusVTPay implements BplusVTPayContract
 
     public function getBplusVTPay($username = null)
     {
-        return $this->configure['model']::where('user_id', '=', $this->authFactory->id())->where(function ($query) use ($username) {
+        $builderQuery = $this->configure['model']::where('user_id', '=', $this->authFactory->id())->where(function ($query) use ($username) {
             if ($username) {
-                $query->where('username', '=', $username);
+                $query->where('username', '=', convertPhonenumberTo84($username));
             }
-        })->get()->toArray();
+        })->get();
+        if ($username != null) $builderQuery = $builderQuery->first();
+        if (!empty($builderQuery)) return $builderQuery->toArray();
+        return null;
     }
+
+
 }
